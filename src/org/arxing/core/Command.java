@@ -1,5 +1,7 @@
 package org.arxing.core;
 
+import com.annimon.stream.function.Consumer;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -13,9 +15,16 @@ import java.util.List;
 
 public class Command {
     private ProcessBuilder builder = new ProcessBuilder();
+    private List<String> commandBuffer = new ArrayList<>();
+    private List<String> runner = new ArrayList<>();
 
     public Command() {
-        builder.redirectErrorStream(true);
+        this(new String[]{});
+    }
+
+    public Command(String[] runner) {
+        this.builder.redirectErrorStream(true);
+        this.runner.addAll(Arrays.asList(runner));
     }
 
     public Command cd(File dir) {
@@ -28,7 +37,11 @@ public class Command {
     }
 
     public Command exec(String... commands) throws IOException {
-        List<String> commandList = new ArrayList<>(Arrays.asList("cmd", "/c"));
+        return exec(true, commands);
+    }
+
+    public Command exec(boolean print, String... commands) throws IOException {
+        List<String> commandList = new ArrayList<>(runner);
         for (String command : commands) {
             commandList.add(encode(command));
         }
@@ -39,10 +52,30 @@ public class Command {
         BufferedReader reader = new BufferedReader(isr);
         String line;
         while ((line = reader.readLine()) != null) {
-            System.out.println(decode(line));
+            line = decode(line);
+            if (print)
+                System.out.println(line);
+            else
+                commandBuffer.add(line);
         }
         isr.close();
         reader.close();
+        return this;
+    }
+
+    public Command println() {
+        for (String line : commandBuffer) {
+            System.out.println(line);
+        }
+        commandBuffer.clear();
+        return this;
+    }
+
+    public Command getPrints(Consumer<String> consumer) {
+        for (String line : commandBuffer) {
+            consumer.accept(line);
+        }
+        commandBuffer.clear();
         return this;
     }
 

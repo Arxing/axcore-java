@@ -10,6 +10,10 @@ import javax.imageio.ImageIO;
 
 public class ImageUtils {
 
+    public static BufferedImage readBuffer(File file) throws IOException {
+        return ImageIO.read(file);
+    }
+
     public static void resizeAndSave(File inputFile, File outputFile, String format, int width, int height) throws IOException {
         BufferedImage bufferedInput = ImageIO.read(inputFile);
         BufferedImage bufferedOutput = resize(bufferedInput, width, height);

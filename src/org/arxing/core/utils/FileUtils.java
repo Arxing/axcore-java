@@ -2,36 +2,38 @@ package org.arxing.core.utils;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.annimon.stream.function.BiFunction;
-import com.sun.jndi.toolkit.url.Uri;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.arxing.core.utils.Logger.print;
 import static org.arxing.core.utils.Logger.println;
 
 public class FileUtils {
+
+    public static File getRuntimePathFile(Class cls) {
+        return new File(cls.getProtectionDomain().getCodeSource().getLocation().getPath()).getParentFile();
+    }
+
+    public static String getRuntimePath(Class cls) {
+        return getRuntimePathFile(cls).toString();
+    }
 
     public static void copy(File from, File to) throws Exception {
         AssertUtils.exception(!from.exists(), "'%s' is not exists.", from.toString());
@@ -112,9 +114,8 @@ public class FileUtils {
         return readBytes(new File(path));
     }
 
-    public static String readString(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        InputStreamReader isr = new InputStreamReader(is, "utf-8");
+    public static String readString(InputStream is) throws IOException {
+        InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
         BufferedReader br = new BufferedReader(isr);
         StringBuilder stringBuilder = new StringBuilder();
         String line;
@@ -123,12 +124,20 @@ public class FileUtils {
         return stringBuilder.toString();
     }
 
+    public static String readString(File file) throws IOException {
+        return readString(new FileInputStream(file));
+    }
+
     public static String readString(String path) throws IOException {
         return readString(new File(path));
     }
 
+    public static <T> T readJson(InputStream is, Type type) throws Exception {
+        return JParser.fromJson(readString(is), type);
+    }
+
     public static <T> T readJson(File file, Type type) throws Exception {
-        return JParser.fromJson(readString(file), type);
+        return readJson(new FileInputStream(file), type);
     }
 
     public static <T> T readJson(String path, Type type) throws Exception {
@@ -270,4 +279,5 @@ public class FileUtils {
     public static boolean exists(String path) {
         return exists(new File(path));
     }
+
 }

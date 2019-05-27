@@ -42,9 +42,15 @@ public class Args {
         return Stream.ofNullable(getValues(name)).findFirst().orElse(null);
     }
 
+    public String getOr(String name, String def) {
+        String r = get(name);
+        return r == null ? def : r;
+    }
+
     public List<String> popValues(String name) {
         List<String> result = getValues(name);
         map.remove(name);
+
         return result;
     }
 
@@ -52,5 +58,11 @@ public class Args {
         String result = get(name);
         map.remove(name);
         return result;
+    }
+
+    public String popOr(String name, String def) {
+        String result = get(name);
+        map.remove(name);
+        return result == null ? def : result;
     }
 }
