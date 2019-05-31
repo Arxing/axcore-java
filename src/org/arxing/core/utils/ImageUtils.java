@@ -1,8 +1,11 @@
 package org.arxing.core.utils;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import java.io.IOException;
 
@@ -31,5 +34,11 @@ public class ImageUtils {
         g2d.drawImage(tmp, 0, 0, null);
         g2d.dispose();
         return resized;
+    }
+
+    public static BufferedImage renderOpacity(BufferedImage img, Color renderColor) {
+        Graphics2D graphics = img.createGraphics();
+        graphics.drawImage(img, 0, 0, renderColor, null);
+        return img;
     }
 }
