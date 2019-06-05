@@ -1,5 +1,7 @@
 package org.arxing.core;
 
+import com.annimon.stream.Stream;
+
 import org.arxing.core.utils.Args;
 import org.arxing.core.utils.Logger;
 
@@ -7,9 +9,14 @@ import java.util.List;
 
 public class MainHelper {
 
-    public static void main(String[] argArray, Class<? extends IWorker>... workerTypes) throws Exception {
+    @SafeVarargs public static void main(PreChecker preChecker,
+                                         String defWorkers,
+                                         String[] argArray,
+                                         Class<? extends IWorker>... workerTypes) throws Exception {
         Args args = Args.of(argArray);
-        List<String> methods = args.popValues("-m");
+        if (preChecker != null)
+            preChecker.preCheckAndSaveEnv(args);
+        List<String> methods = args.has("-m") ? args.popValues("-m") : Stream.of(defWorkers.split(" ")).toList();
         for (String method : methods) {
             IWorker worker = searchWorker(method, workerTypes);
             if (worker != null) {
@@ -21,8 +28,10 @@ public class MainHelper {
         }
     }
 
-    public static void main(String[] argArray, WorkerSearcher customSearcher) throws Exception {
+    public static void main(PreChecker preChecker, String[] argArray, WorkerSearcher customSearcher) throws Exception {
         Args args = Args.of(argArray);
+        if (preChecker != null)
+            preChecker.preCheckAndSaveEnv(args);
         List<String> methods = args.popValues("-m");
         for (String method : methods) {
             IWorker worker = customSearcher.search(method);
@@ -35,7 +44,7 @@ public class MainHelper {
         }
     }
 
-    private static IWorker searchWorker(String method, Class<? extends IWorker>... workerTypes) throws Exception {
+    @SafeVarargs private static IWorker searchWorker(String method, Class<? extends IWorker>... workerTypes) throws Exception {
         for (Class<? extends IWorker> workerType : workerTypes) {
             IWorker worker = workerType.newInstance();
             if (worker.name().equals(method))
@@ -47,5 +56,10 @@ public class MainHelper {
     public interface WorkerSearcher {
 
         IWorker search(String method) throws Exception;
+    }
+
+    public interface PreChecker {
+
+        void preCheckAndSaveEnv(Args args) throws Exception;
     }
 }
