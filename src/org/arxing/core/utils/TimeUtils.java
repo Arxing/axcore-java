@@ -251,7 +251,9 @@ public class TimeUtils {
 
 
     public static void setField(Date date, int field, int val) {
-        dateToCalendar(date).set(field, val);
+        Calendar calendar = dateToCalendar(date);
+        calendar.set(field, val);
+        date.setTime(calendar.getTimeInMillis());
     }
 
     public static void setYear(Date date, int val) {
